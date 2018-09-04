@@ -6,7 +6,8 @@ var gameOptions = {
     boardSize: {
         rows: 4,
         cols: 4
-    }
+    },
+    tweenSpeed: 250
 };
 
 window.onload = function() {
@@ -87,9 +88,16 @@ class PlayGame extends Phaser.Scene {
 
         if (emptyTiles.length > 0) {
             var chosenTile = Phaser.Utils.Array.GetRandom(emptyTiles);
-            this.boardArray[chosenTile.row][chosenTile.col].tileValue = 1;
-            this.boardArray[chosenTile.row][chosenTile.col].tileSprite.visible = true;
-            this.boardArray[chosenTile.row][chosenTile.col].tileSprite.setFrame(0);
+            var boardTile = this.boardArray[chosenTile.row][chosenTile.col];
+            boardTile.tileValue = 1;
+            boardTile.tileSprite.visible = true;
+            boardTile.tileSprite.setFrame(0);
+            boardTile.tileSprite.alpha = 0;
+            this.tweens.add({
+                targets: boardTile.tileSprite,
+                alpha: 1,
+                duration: gameOptions.tweenSpeed
+            });
         }
     }
 }
