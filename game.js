@@ -3,7 +3,8 @@ window.onload = function() {
     var gameConfig = {
         width: 480,
         height: 640,
-        backgroundColor: 0xff0000
+        backgroundColor: 0xff0000,
+        scene: PlayGame
     }
 
     game = new Phaser.Game(gameConfig);
@@ -24,5 +25,15 @@ function resizeGame() {
     } else {
         canvas.style.width = (windowHeight * gameRatio) + "px";
         canvas.style.height = windowHeight + "px";
+    }
+}
+
+class PlayGame extends Phaser.Scene {
+    constructor() {
+        super("PlayGame");
+    }
+
+    create() {
+        console.log("this is my awesome game");
     }
 }
