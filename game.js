@@ -1,9 +1,19 @@
 var game;
+
+var gameOptions = {
+    tileSize: 200,
+    tileSpacing: 20,
+    boardSize: {
+        rows: 4,
+        cols: 4
+    }
+};
+
 window.onload = function() {
     var gameConfig = {
-        width: 480,
-        height: 640,
-        backgroundColor: 0xff0000,
+        width: gameOptions.boardSize.cols * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
+        height: gameOptions.boardSize.rows * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
+        backgroundColor: 0xecf0f1,
         scene: [BootGame, PlayGame]
     }
 
@@ -18,6 +28,10 @@ class BootGame extends Phaser.Scene {
         super("BootGame");
     }
 
+    preload() {
+        this.load.image("emptytile", "assets/sprites/emptytile.png");
+    }
+
     create() {
         console.log("game is booting...");
         this.scene.start("PlayGame");
@@ -30,7 +44,18 @@ class PlayGame extends Phaser.Scene {
     }
 
     create() {
-        console.log("this is my awesome game");
+        for (var i=0; i<gameOptions.boardSize.rows; i++) {
+            for (var j=0; j<gameOptions.boardSize.cols; j++) {
+                var tilePosition = this.getTilePosition(i, j);
+                this.add.image(tilePosition.x, tilePosition.y, "emptytile");
+            }
+        }
+    }
+
+    getTilePosition(row, col) {
+        var posx = gameOptions.tileSpacing * (col + 1) + gameOptions.tileSize * (col + 0.5);
+        var posy = gameOptions.tileSpacing * (row + 1) + gameOptions.tileSize * (row + 0.5);
+        return new Phaser.Geom.Point(posx, posy);
     }
 }
 
