@@ -49,6 +49,7 @@ class PlayGame extends Phaser.Scene {
     }
 
     create() {
+        this.canMove = false;
         this.boardArray = [];
         for (var i=0; i<gameOptions.boardSize.rows; i++) {
             this.boardArray[i] = [];
@@ -65,6 +66,10 @@ class PlayGame extends Phaser.Scene {
         }
         this.addTile();
         this.addTile();
+        
+        // Input
+        this.input.keyboard.on("keydown", this.handleKey, this);
+        this.input.on("pointerup", this.handleSwipe, this);
     }
 
     getTilePosition(row, col) {
@@ -96,9 +101,26 @@ class PlayGame extends Phaser.Scene {
             this.tweens.add({
                 targets: boardTile.tileSprite,
                 alpha: 1,
-                duration: gameOptions.tweenSpeed
+                duration: gameOptions.tweenSpeed,
+                callbackScope: this,
+                onComplete() {
+                    this.canMove = true;
+                }
             });
         }
+    }
+
+    handleKey(e) {
+        var keyPressed = e.code;
+        console.log("You pressed key #" + keyPressed);
+    }
+
+    handleSwipe(e) {
+        var swipeTime = e.upTime - e.downTime;
+        var swipe = new Phaser.Geom.Point(e.upX - e.downX, e.upY - e.downY);
+        console.log("Movement time: " + swipeTime + " ms");
+        console.log("Horizontal distance: " + swipe.x + " pixels");
+        console.log("Vertical distance: " + swipe.y + " pixels");
     }
 }
 
