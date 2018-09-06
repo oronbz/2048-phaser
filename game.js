@@ -171,15 +171,14 @@ class PlayGame extends Phaser.Scene {
     }
 
     makeMove(d) {
+        this.movingTiles = 0;
         var dRow = (d == LEFT || d == RIGHT) ? 0 : d == UP ? -1 : 1;
         var dCol = (d == UP || d == DOWN) ? 0 : d == LEFT ? -1 : 1;
         this.canMove = false;
-        var movedTiles = 0;
         var firstRow = (d == UP) ? 1 : 0;
         var lastRow = gameOptions.boardSize.rows - ((d == DOWN) ? 1 : 0);
         var firstCol = (d == LEFT) ? 1 : 0;
         var lastCol = gameOptions.boardSize.cols - ((d == RIGHT) ? 1 : 0);
-        var movedSomething = false;
         for (var i=firstRow; i<lastRow; i++) {
             for (var j=firstCol; j<lastCol; j++) {
                 var curRow = dRow == 1 ? (lastRow - 1) - i : i;
@@ -192,18 +191,14 @@ class PlayGame extends Phaser.Scene {
                         newRow += dRow;
                         newCol += dCol;
                     }
-                    movedTiles++;
                     if (newRow != curRow || newCol != curCol) {
-                        movedSomething = true;
-                        this.boardArray[curRow][curCol].tileSprite.depth = movedTiles;
                         var newPos = this.getTilePosition(newRow, newCol);
-                        this.boardArray[curRow][curCol].tileSprite.x = newPos.x;
-                        this.boardArray[curRow][curCol].tileSprite.y = newPos.y;
+                        var willUpgrade = this.boardArray[newRow][newCol].tileValue == tileValue;
+                        this.moveTile(this.boardArray[curRow][curCol].tileSprite, newPos, willUpgrade);
                         this.boardArray[curRow][curCol].tileValue = 0;
-                        if (this.boardArray[newRow][newCol].tileValue == tileValue) {
+                        if (willUpgrade) {
                             this.boardArray[newRow][newCol].tileValue++;
                             this.boardArray[newRow][newCol].upgraded = true;
-                            this.boardArray[curRow][curCol].tileSprite.setFrame(tileValue);
                         } else {
                             this.boardArray[newRow][newCol].tileValue = tileValue;
                         }
@@ -213,11 +208,52 @@ class PlayGame extends Phaser.Scene {
 
             }
         }
-        if (movedSomething) {
-            this.refreshBoard();
-        } else {
+        if (this.movingTiles == 0) {
             this.canMove = true;
-        }   
+        }
+    }
+
+    moveTile(tile, point, upgrade) {
+        this.movingTiles++;
+        tile.depth = this.movingTiles;
+        var distance = Math.abs(tile.x - point.x) + Math.abs(tile.y - point.y);
+        this.tweens.add({
+            targets: [tile],
+            x: point.x,
+            y: point.y,
+            duration: gameOptions.tweenSpeed * 0.5 * distance / gameOptions.tileSize,
+            callbackScope: this,
+            onComplete() {
+                if (upgrade) {
+                    this.upgradeTile(tile);
+                } else {
+                    this.endTween(tile);
+                }
+            }
+        })
+    }
+
+    upgradeTile(tile) {
+        tile.setFrame(tile.frame.name + 1);
+        this.tweens.add({
+            targets: [tile],
+            scaleX: 1.1,
+            scaleY: 1.1,
+            duration: gameOptions.tweenSpeed * 0.5,
+            yoyo: true,
+            callbackScope: this,
+            onComplete() {
+                this.endTween(tile);
+            }
+        })
+    }
+
+    endTween(tile) {
+        this.movingTiles--;
+        tile.depth = 0;
+        if (this.movingTiles == 0) {
+            this.refreshBoard();
+        }
     }
 
     isLegalPosition(row, col, value) {
