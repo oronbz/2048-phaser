@@ -184,15 +184,53 @@ class PlayGame extends Phaser.Scene {
                 var curCol = dCol == 1 ? (lastCol - 1) - j : j;
                 var tileValue = this.boardArray[curRow][curCol].tileValue;
                 if (tileValue != 0) {
+                    var newRow = curRow;
+                    var newCol = curCol;
+                    while (this.isLegalPosition(newRow + dRow, newCol + dCol)) {
+                        newRow += dRow;
+                        newCol += dCol;
+                    }
                     movedTiles++;
                     this.boardArray[curRow][curCol].tileSprite.depth = movedTiles;
-                    var newPos = this.getTilePosition(curRow + dRow, curCol + dCol);
+                    var newPos = this.getTilePosition(newRow, newCol);
                     this.boardArray[curRow][curCol].tileSprite.x = newPos.x;
                     this.boardArray[curRow][curCol].tileSprite.y = newPos.y;
+                    this.boardArray[curRow][curCol].tileValue = 0;
+                    if (this.boardArray[newRow][newCol].tileValue == tileValue) {
+                        this.boardArray[newRow][newCol].tileValue++;
+                        this.boardArray[curRow][curCol].tileSprite.setFrame(tileValue);
+                    } else {
+                        this.boardArray[newRow][newCol].tileValue = tileValue;
+                    }
                 }
 
             }
         }
+        this.refreshBoard();
+    }
+
+    isLegalPosition(row, col) {
+        var rowInside = row >= 0 && row < gameOptions.boardSize.rows;
+        var colInside = col >= 0 && col < gameOptions.boardSize.cols;
+        return rowInside && colInside;
+    }
+
+    refreshBoard() {
+        for (var i=0; i<gameOptions.boardSize.rows; i++) {
+            for (var j=0; j<gameOptions.boardSize.cols; j++) {
+                var spritePosition = this.getTilePosition(i, j);
+                this.boardArray[i][j].tileSprite.x = spritePosition.x;
+                this.boardArray[i][j].tileSprite.y = spritePosition.y;
+                var tileValue = this.boardArray[i][j].tileValue;
+                if (tileValue > 0) {
+                    this.boardArray[i][j].tileSprite.visible = true;
+                    this.boardArray[i][j].tileSprite.setFrame(tileValue - 1);
+                } else {
+                    this.boardArray[i][j].tileSprite.visible = false;
+                }
+            }
+        }
+        this.addTile();
     }
 }
 
