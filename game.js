@@ -7,7 +7,7 @@ var gameOptions = {
         rows: 4,
         cols: 4
     },
-    tweenSpeed: 200,
+    tweenSpeed: 50,
     swipeMaxTime: 1000,
     swipeMinDistance: 20,
     swipeMinNormal: 0.85
@@ -43,6 +43,8 @@ class BootGame extends Phaser.Scene {
             frameWidth: gameOptions.tileSize,
             frameHeight: gameOptions.tileSize
         });
+        this.load.audio("move", ["assets/sounds/move.ogg", "assets/sounds/move.mp3"]);
+        this.load.audio("grow", ["assets/sounds/grow.ogg", "assets/sounds/grow.mp3"]);
     }
 
     create() {
@@ -79,6 +81,10 @@ class PlayGame extends Phaser.Scene {
         // Input
         this.input.keyboard.on("keydown", this.handleKey, this);
         this.input.on("pointerup", this.handleSwipe, this);
+
+        // Sound
+        this.moveSound = this.sound.add("move");
+        this.growSound = this.sound.add("grow");
     }
 
     getTilePosition(row, col) {
@@ -210,6 +216,8 @@ class PlayGame extends Phaser.Scene {
         }
         if (this.movingTiles == 0) {
             this.canMove = true;
+        } else {
+            this.moveSound.play();
         }
     }
 
@@ -221,7 +229,7 @@ class PlayGame extends Phaser.Scene {
             targets: [tile],
             x: point.x,
             y: point.y,
-            duration: gameOptions.tweenSpeed * 0.5 * distance / gameOptions.tileSize,
+            duration: gameOptions.tweenSpeed * distance / gameOptions.tileSize,
             callbackScope: this,
             onComplete() {
                 if (upgrade) {
@@ -234,12 +242,13 @@ class PlayGame extends Phaser.Scene {
     }
 
     upgradeTile(tile) {
+        this.growSound.play();
         tile.setFrame(tile.frame.name + 1);
         this.tweens.add({
             targets: [tile],
             scaleX: 1.1,
             scaleY: 1.1,
-            duration: gameOptions.tweenSpeed * 0.5,
+            duration: gameOptions.tweenSpeed,
             yoyo: true,
             callbackScope: this,
             onComplete() {
