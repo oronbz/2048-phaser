@@ -10,7 +10,8 @@ var gameOptions = {
     tweenSpeed: 50,
     swipeMaxTime: 1000,
     swipeMinDistance: 20,
-    swipeMinNormal: 0.85
+    swipeMinNormal: 0.85,
+    aspectRatio: 16/9
 };
 
 const LEFT = 0;
@@ -19,9 +20,11 @@ const UP = 2;
 const DOWN = 3;
 
 window.onload = function() {
+    var tileAndSpacing = gameOptions.tileSize + gameOptions.tileSpacing;
+    var width = gameOptions.boardSize.cols * tileAndSpacing + gameOptions.tileSpacing;
     var gameConfig = {
-        width: gameOptions.boardSize.cols * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
-        height: gameOptions.boardSize.rows * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
+        width: width,
+        height: width * gameOptions.aspectRatio,
         backgroundColor: 0xecf0f1,
         scene: [BootGame, PlayGame]
     }
@@ -90,6 +93,10 @@ class PlayGame extends Phaser.Scene {
     getTilePosition(row, col) {
         var posx = gameOptions.tileSpacing * (col + 1) + gameOptions.tileSize * (col + 0.5);
         var posy = gameOptions.tileSpacing * (row + 1) + gameOptions.tileSize * (row + 0.5);
+        var boardHeight = gameOptions.boardSize.rows * gameOptions.tileSize;
+        boardHeight += (gameOptions.boardSize.rows + 1) * gameOptions.tileSpacing;
+        var offsetY = (game.config.height - boardHeight) / 2;
+        posy += offsetY;
         return new Phaser.Geom.Point(posx, posy);
     }
     
