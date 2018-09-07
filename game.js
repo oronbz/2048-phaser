@@ -41,6 +41,12 @@ class BootGame extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image("restart", "assets/sprites/restart.png");
+        this.load.image("scorepanel", "assets/sprites/scorepanel.png");
+        this.load.image("scorelabels", "assets/sprites/scorelabels.png");
+        this.load.image("logo", "assets/sprites/logo.png");
+        this.load.image("howtoplay", "assets/sprites/howtoplay.png");
+        this.load.image("gametitle", "assets/sprites/gametitle.png");
         this.load.image("emptytile", "assets/sprites/emptytile.png");
         this.load.spritesheet("tiles", "assets/sprites/tiles.png", {
             frameWidth: gameOptions.tileSize,
@@ -48,6 +54,7 @@ class BootGame extends Phaser.Scene {
         });
         this.load.audio("move", ["assets/sounds/move.ogg", "assets/sounds/move.mp3"]);
         this.load.audio("grow", ["assets/sounds/grow.ogg", "assets/sounds/grow.mp3"]);
+        this.load.bitmapFont("font", "assets/fonts/font.png", "assets/fonts/font.fnt");
     }
 
     create() {
@@ -62,6 +69,30 @@ class PlayGame extends Phaser.Scene {
     }
 
     create() {
+        this.score = 0;
+        var restartXY = this.getTilePosition(-0.8, gameOptions.boardSize.cols - 1);
+        var restartButton = this.add.sprite(restartXY.x, restartXY.y, "restart");
+        restartButton.setInteractive();
+        restartButton.on("pointerdown", function() {
+            this.scene.start("PlayGame");
+        }, this);
+        var scoreXY = this.getTilePosition(-0.8, 1);
+        this.add.image(scoreXY.x, scoreXY.y, "scorepanel");
+        this.add.image(scoreXY.x, scoreXY.y - 70, "scorelabels");
+        var textXY = this.getTilePosition(-0.92, -0.4);
+        this.scoreText = this.add.bitmapText(textXY.x, textXY.y, "font", "0");
+        textXY = this.getTilePosition(-0.92, 1.1);
+        this.bestScoreText = this.add.bitmapText(textXY.x, textXY.y, "font", "0");
+        var gameTitle = this.add.image(10, 5, "gametitle");
+        gameTitle.setOrigin(0, 0);
+        var howTo = this.add.image(game.config.width, 5, "howtoplay");
+        howTo.setOrigin(1, 0);
+        var logo = this.add.sprite(game.config.width / 2, game.config.height, "logo");
+        logo.setOrigin(0.5, 1);
+        logo.setInteractive();
+        logo.on("pointerdown", function() {
+            window.location.href = "http://www.emanueleferonato.com/"
+        }, this);
         this.canMove = false;
         this.boardArray = [];
         for (var i=0; i<gameOptions.boardSize.rows; i++) {
@@ -78,6 +109,7 @@ class PlayGame extends Phaser.Scene {
                 }
             }
         }
+        logo.visible = false;
         this.addTile();
         this.addTile();
         
@@ -211,6 +243,7 @@ class PlayGame extends Phaser.Scene {
                         this.boardArray[curRow][curCol].tileValue = 0;
                         if (willUpgrade) {
                             this.boardArray[newRow][newCol].tileValue++;
+                            this.score += Math.pow(2, this.boardArray[newRow][newCol].tileValue);
                             this.boardArray[newRow][newCol].upgraded = true;
                         } else {
                             this.boardArray[newRow][newCol].tileValue = tileValue;
@@ -285,6 +318,7 @@ class PlayGame extends Phaser.Scene {
     }
 
     refreshBoard() {
+        this.scoreText.text = this.score.toString();
         for (var i=0; i<gameOptions.boardSize.rows; i++) {
             for (var j=0; j<gameOptions.boardSize.cols; j++) {
                 var spritePosition = this.getTilePosition(i, j);
