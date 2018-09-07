@@ -11,7 +11,8 @@ var gameOptions = {
     swipeMaxTime: 1000,
     swipeMinDistance: 20,
     swipeMinNormal: 0.85,
-    aspectRatio: 16/9
+    aspectRatio: 16/9,
+    localStorageName: "topscore4096"
 };
 
 const LEFT = 0;
@@ -82,7 +83,11 @@ class PlayGame extends Phaser.Scene {
         var textXY = this.getTilePosition(-0.92, -0.4);
         this.scoreText = this.add.bitmapText(textXY.x, textXY.y, "font", "0");
         textXY = this.getTilePosition(-0.92, 1.1);
-        this.bestScoreText = this.add.bitmapText(textXY.x, textXY.y, "font", "0");
+        this.bestScore = localStorage.getItem(gameOptions.localStorageName);
+        if (this.bestScore == null) {
+            this.bestScore = 0;
+        }
+        this.bestScoreText = this.add.bitmapText(textXY.x, textXY.y, "font", this.bestScore.toString());
         var gameTitle = this.add.image(10, 5, "gametitle");
         gameTitle.setOrigin(0, 0);
         var howTo = this.add.image(game.config.width, 5, "howtoplay");
@@ -319,6 +324,11 @@ class PlayGame extends Phaser.Scene {
 
     refreshBoard() {
         this.scoreText.text = this.score.toString();
+        if (this.score > this.bestScore) {
+            this.bestScore = this.score;
+            localStorage.setItem(gameOptions.localStorageName, this.bestScore);
+            this.bestScoreText.text = this.bestScore.toString();
+        }
         for (var i=0; i<gameOptions.boardSize.rows; i++) {
             for (var j=0; j<gameOptions.boardSize.cols; j++) {
                 var spritePosition = this.getTilePosition(i, j);
